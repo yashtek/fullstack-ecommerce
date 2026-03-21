@@ -1,4 +1,35 @@
-# deps
+# Dependencies
 node_modules/
+
+.pnp
+.pnp.js
+
+# Environment variables (NEVER commit these!)
 .env
-.md
+.env.local
+.env.*.local
+
+# Build outputs
+.next/
+dist/
+build/
+.turbo/
+.vercel/
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+bun.lockb
+
+# OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Drizzle migrations (optional, but generated files)
+drizzle/meta/
