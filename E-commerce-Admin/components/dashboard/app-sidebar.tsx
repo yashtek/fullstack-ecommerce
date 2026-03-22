@@ -1,27 +1,18 @@
 "use client"
 
 import * as React from "react"
+import { usePathname } from "next/navigation"
+
 import {
-  IconCamera,
-  IconChartBar,
   IconDashboard,
-  IconDatabase,
-  IconFileAi,
   IconFileDescription,
   IconFileWord,
-  IconFolder,
-  IconHelp,
-  IconListDetails,
   IconReport,
-  IconSearch,
   IconSettings,
-  IconUsers,
 } from "@tabler/icons-react"
 import {
-  IconCreditCard,
   IconDotsVertical,
   IconLogout,
-  IconNotification,
   IconUserCircle,
 } from "@tabler/icons-react"
 
@@ -31,7 +22,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -46,6 +36,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { Avatar, AvatarImage } from "../ui/avatar"
+import Link from "next/link"
 
 const data = {
   user: {
@@ -118,6 +109,8 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>&{user:{email:string}}) {
+  const pathname = usePathname()
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -140,10 +133,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>&{u
           {data.navMain.map((item) => (
             <SidebarMenuItem key={item.title} className="p-2 mx-3 ">
               <SidebarMenuButton asChild>
-                <a href={item.url} className="flex items-center gap-2">
+                <Link 
+                  href={item.url} 
+                  className={`flex items-center gap-2 ${
+                    pathname === item.url ? "text-blue-600 font-semibold bg-blue-50 rounded-md px-2 py-1" : ""
+                  }`}
+                >
                   <item.icon size={20} />
                   <span className="text-md">{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
@@ -153,7 +151,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>&{u
           {data.navClouds.map((item) => (
             <SidebarMenuItem key={item.title} className="p-2 mx-3 ">
               <SidebarMenuButton asChild>
-                <a href={item.url} className="flex items-center gap-2">
+                <a 
+                  href={item.url} 
+                  className={`flex items-center gap-2 ${
+                    pathname === item.url ? "text-blue-600 font-semibold bg-blue-50 rounded-md px-2 py-1" : ""
+                  }`}
+                >
                   <item.icon size={20} />
                   <span className="text-md">{item.title}</span>
                 </a>

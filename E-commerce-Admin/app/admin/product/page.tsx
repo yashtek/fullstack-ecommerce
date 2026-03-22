@@ -24,6 +24,8 @@ import {
 import { IconDotsVertical, IconEdit, IconTrash } from "@tabler/icons-react"
 import EditProduct from "@/components/products/editproduct"
 import { useState } from "react"
+
+import { Switch } from "@/components/ui/switch"
 const products = [
   {
     id: 1,
@@ -75,6 +77,36 @@ const products = [
     stock: 50,
     addedAt: "2024-01-19",
   },
+  {
+    id: 6,
+    name: "Product 5",
+    image: "img5.jpg",
+    category: "Books",
+    mrp: "$55.00",
+    about: "Best seller",
+    stock: 50,
+    addedAt: "2024-01-19",
+  },
+  {
+    id: 7,
+    name: "Product 5",
+    image: "img5.jpg",
+    category: "Books",
+    mrp: "$55.00",
+    about: "Best seller",
+    stock: 50,
+    addedAt: "2024-01-19",
+  },
+  {
+    id: 8,
+    name: "Product 5",
+    image: "img5.jpg",
+    category: "Books",
+    mrp: "$55.00",
+    about: "Best seller",
+    stock: 50,
+    addedAt: "2024-01-19",
+  },
 ]
 
 export default function Product() {
@@ -87,7 +119,7 @@ export default function Product() {
     }
 
   return (
-    <div className="flex flex-col w-full h-full p-6 gap-6">
+    <div className="flex flex-col w-full  p-6 gap-6">
      
   {/* Header */}
   <div className="flex items-center justify-between w-full">
@@ -113,7 +145,7 @@ export default function Product() {
   {/* Table */}
   <div className="flex-1 w-100vh border rounded-xl overflow-hidden bg-background">
     <Table >
-      <TableHeader >
+      <TableHeader className="bg-primary-foreground" >
         <TableRow>
           <TableHead className="w-12">Sr No.</TableHead>
           <TableHead>Name</TableHead>
@@ -123,6 +155,7 @@ export default function Product() {
           <TableHead>About</TableHead>
           <TableHead>Stock</TableHead>
           <TableHead>Added At</TableHead>
+          <TableHead>Live</TableHead>
           <TableHead>Action</TableHead>
         </TableRow>
       </TableHeader>
@@ -140,6 +173,10 @@ export default function Product() {
             </TableCell>
             <TableCell>{product.stock}</TableCell>
             <TableCell>{product.addedAt}</TableCell>
+            <TableCell><Switch/>
+
+            
+            </TableCell>
             <TableCell>
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
@@ -153,7 +190,7 @@ export default function Product() {
         className="flex items-center gap-2"
       >
         <IconEdit size={16} />
-        <Button variant="ghost" onClick={()=> handelEdit(product)} className=" ">Edit</Button>
+        <Button variant="secondary" onClick={()=> handelEdit(product)} className=" w-full items-center justify-center">Edit</Button>
       </DropdownMenuItem>
       <DropdownMenuItem 
    
