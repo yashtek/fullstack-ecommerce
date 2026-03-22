@@ -48,7 +48,7 @@ export function Loginform() {
 
     onSuccess: () => {
       toast.success("Login Successfully")
-      router.push("/dashboard")
+      router.push("/admin/dashboard")
     },
     onError: () => {
       toast.error("Unable to login")

@@ -33,7 +33,7 @@ export const loginService = async (
   const accesstoken = jwt.sign(
     { id: existingUser.id, role: existingUser.role },
     process.env.JWT_SECRET as string,
-    { expiresIn: "15m" },
+    { expiresIn: "1d" },
   );
   const refreshToken = randomBytes(64).toString("hex");
 
@@ -145,7 +145,7 @@ export const RefreshAccessToeknService = async (refreshToken: string) => {
       role: user.role,
     },
     process.env.JWT_SECRET as string,
-    { expiresIn: "15m" },
+    { expiresIn: "1d" },
   );
 
   return {

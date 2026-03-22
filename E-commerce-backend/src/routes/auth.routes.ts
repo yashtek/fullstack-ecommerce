@@ -6,7 +6,7 @@ import { loginController,signupController,RefershAccessTokenController,logoutCon
 authRoutes.post("/login",loginController);
 authRoutes.post("/signup",signupController);
 authRoutes.post("/refresh",RefershAccessTokenController);
-authRoutes.post("/me",getUserController);
+authRoutes.get("/me",getUserController);
 authRoutes.post("/logout",loginController);
 
 export default authRoutes;

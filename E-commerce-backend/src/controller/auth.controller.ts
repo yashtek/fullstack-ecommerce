@@ -27,6 +27,7 @@ export const loginController = async (c: Context) => {
     setCookie(c, "accessToken", result.accesstoken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+       path:"/",
       sameSite: "Strict",
       maxAge: 60 * 15, // 15 min
     });
@@ -34,7 +35,8 @@ export const loginController = async (c: Context) => {
     setCookie(c, "refreshToken", result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
+      sameSite: "lax",
+       path:"/",
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
@@ -125,13 +127,15 @@ if (!refreshToken) {
     setCookie(c, "accessToken", result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
+      sameSite: "lax",
       maxAge: 60 * 15, 
+      path:"/"
     });
 
     return c.json({
       success: true,
       message: "accessToken updated successfully ",
+      accessToken:result.accessToken
     
     });
 
