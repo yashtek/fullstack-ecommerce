@@ -1,17 +1,25 @@
-import { Button } from "@/components/ui/button"
+import Image from "next/image"
+import { Loginform } from "@/components/auth/login-form"
 
 export default function Page() {
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
+    <div className="relative min-h-screen flex items-center justify-center">
+      {/* Background Image */}
+      <img
+        src="https://picsum.photos/1500/800"
+        alt="bg"
+        className="absolute inset-0 w-full h-full object-cover -z-10"
+      />
+
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-black/40 -z-10" />
+
+      {/* Content Container */}
+      <div className="flex flex-col items-center justify-center text-center px-4 w-full max-w-md">
+       
+        {/* Login Form */}
+        <div className="w-full ">
+          <Loginform />
         </div>
       </div>
     </div>
