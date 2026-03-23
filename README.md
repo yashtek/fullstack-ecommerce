@@ -8,10 +8,12 @@ Bun – Fast JavaScript runtime
 Hono – Lightweight web framework
 PostgreSQL – Relational database
 Drizzle ORM – Type-safe database queries
+
 ## Frontend
 Next.js – React framework
 shadcn/ui – UI components
 TanStack Query – Server state management
+
 ## Authentication & Security
 JWT (Access + Refresh Tokens)
 HTTP-only cookies

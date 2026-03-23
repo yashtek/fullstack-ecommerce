@@ -1,4 +1,20 @@
+CREATE TYPE "public"."category" AS ENUM('Electronics', 'Clothing', 'Toys', 'HomeDecor', 'Kitchen', 'Bathroom', 'Stationery', 'Food');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('admin', 'user');--> statement-breakpoint
+CREATE TABLE "products" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"name" varchar(255) NOT NULL,
+	"price" numeric(10, 2) NOT NULL,
+	"about" varchar(255) DEFAULT '',
+	"main_image" json NOT NULL,
+	"product_images" json DEFAULT '[]'::json NOT NULL,
+	"is_live" boolean DEFAULT false NOT NULL,
+	"stock" integer DEFAULT 0 NOT NULL,
+	"category" "category" NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"deleted_at" timestamp
+);
+--> statement-breakpoint
 CREATE TABLE "sessions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,

@@ -1,4 +1,4 @@
-import { boolean, pgEnum, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, integer, json, numeric, pgEnum, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const roleEnum = pgEnum("user_role", ["admin", "user"]);
 
@@ -23,3 +23,36 @@ export const sessions = pgTable("sessions", {
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const categoryEnum = pgEnum("category", [
+  "Electronics",
+  "Clothing",
+  "Toys",
+  "HomeDecor",
+  "Kitchen",
+  "Bathroom",
+  "Stationery",
+  "Food"
+]);
+export const products = pgTable("products", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  productName: varchar("name", { length: 255 }).notNull(),
+  price: numeric("price", { precision: 10, scale: 2 }).notNull(),
+  about: varchar("about", { length: 255 }).default(""),
+  mainImage: json("main_image")
+    .$type<{ url: string; public_id: string }>()
+    .notNull(),
+  productImages: json("product_images")
+    .$type<{ url: string; public_id: string }[]>()
+    .default([])
+    .notNull(),
+  isLive: boolean("is_live").default(false).notNull(),
+  stock: integer("stock").default(0).notNull(),
+  category: categoryEnum("category").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  deletedAt: timestamp("deleted_at")
+});
+
+
+
