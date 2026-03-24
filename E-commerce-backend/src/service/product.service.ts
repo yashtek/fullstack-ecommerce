@@ -124,7 +124,6 @@ const mainImage = await uploadImage(mainFile);
 
 };
 
-import { ilike, and, eq } from "drizzle-orm";
 
 export const getALlProductService = async ({
   page = 1,

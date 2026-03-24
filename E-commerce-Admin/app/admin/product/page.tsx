@@ -26,97 +26,45 @@ import EditProduct from "@/components/products/editproduct"
 import { useState } from "react"
 
 import { Switch } from "@/components/ui/switch"
-const products = [
-  {
-    id: 1,
-    name: "Product 1",
-    image: "img1.jpg",
-    category: "Electronics",
-    mrp: "$250.00",
-    about: "High quality product",
-    stock: 10,
-    addedAt: "2024-01-15",
-  },
-  {
-    id: 2,
-    name: "Product 2",
-    image: "img2.jpg",
-    category: "Clothing",
-    mrp: "$150.00",
-    about: "Premium fabric",
-    stock: 25,
-    addedAt: "2024-01-16",
-  },
-  {
-    id: 3,
-    name: "Product 3",
-    image: "img3.jpg",
-    category: "Home",
-    mrp: "$350.00",
-    about: "Durable and stylish",
-    stock: 5,
-    addedAt: "2024-01-17",
-  },
-  {
-    id: 4,
-    name: "Product 4",
-    image: "img4.jpg",
-    category: "Electronics",
-    mrp: "$450.00",
-    about: "Latest model",
-    stock: 15,
-    addedAt: "2024-01-18",
-  },
-  {
-    id: 5,
-    name: "Product 5",
-    image: "img5.jpg",
-    category: "Books",
-    mrp: "$55.00",
-    about: "Best seller",
-    stock: 50,
-    addedAt: "2024-01-19",
-  },
-  {
-    id: 6,
-    name: "Product 5",
-    image: "img5.jpg",
-    category: "Books",
-    mrp: "$55.00",
-    about: "Best seller",
-    stock: 50,
-    addedAt: "2024-01-19",
-  },
-  {
-    id: 7,
-    name: "Product 5",
-    image: "img5.jpg",
-    category: "Books",
-    mrp: "$55.00",
-    about: "Best seller",
-    stock: 50,
-    addedAt: "2024-01-19",
-  },
-  {
-    id: 8,
-    name: "Product 5",
-    image: "img5.jpg",
-    category: "Books",
-    mrp: "$55.00",
-    about: "Best seller",
-    stock: 50,
-    addedAt: "2024-01-19",
-  },
-]
+import { useQuery } from "@tanstack/react-query"
+import { getProducts } from "@/lib/product"
+
 
 export default function Product() {
-    const[selectedProduct, setSelectedProduct] = useState(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const[selectedProduct, setSelectedProduct] = useState<any>(null);
     const [isEditOpen, setIsEditOpen] = useState(false)
+    const [page, setPage] = useState(1)
+    const [search, setSearch] = useState("")
 
-    const handelEdit = (product) =>{
+    const {data, isLoading, error} = useQuery({
+       queryKey: ["getallproduct", page, search],
+      queryFn:()=>getProducts(page, 10, search, ""),
+   
+    })
+
+    const handleSearch = (value: string) => {
+      setSearch(value)
+      setPage(1) // Reset to page 1 when searching
+    }
+
+    const handleNextPage = () => {
+      if (page < totalPages) setPage(prev => prev + 1)
+    }
+
+    const handlePrevPage = () => {
+      if (page > 1) setPage(prev => prev - 1)
+    }
+
+    const products = data?.data || []
+    const totalPages = data?.pagination?.totalPages || 1
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handelEdit = (product: any) =>{
         setSelectedProduct(product);
         setIsEditOpen(true);
     }
+    
 
   return (
     <div className="flex flex-col w-full  p-6 gap-6">
@@ -127,8 +75,13 @@ export default function Product() {
     {/* Left: Search */}
     <div className="flex items-center gap-2 w-full max-w-md">
       <Field orientation="horizontal">
-      <Input type="search" placeholder="Search..." />
-      <Button>Search</Button>
+      <Input 
+        type="search" 
+        placeholder="Search..." 
+        value={search}
+        onChange={(e) => handleSearch(e.target.value)}
+      />
+      <Button onClick={() => handleSearch(search)}>Search</Button>
     </Field>
      
     </div>
@@ -144,6 +97,20 @@ export default function Product() {
 
   {/* Table */}
   <div className="flex-1 w-100vh border rounded-xl overflow-hidden bg-background">
+    {isLoading ? (
+      <div className="flex items-center justify-center p-8">
+        <p>Loading products...</p>
+      </div>
+    ) : error ? (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-red-500">Error loading products</p>
+      </div>
+    ) : products.length === 0 ? (
+      <div className="flex items-center justify-center p-8">
+        <p>No products found</p>
+      </div>
+    ) : (
+      <>
     <Table >
       <TableHeader className="bg-primary-foreground" >
         <TableRow>
@@ -159,23 +126,29 @@ export default function Product() {
           <TableHead>Action</TableHead>
         </TableRow>
       </TableHeader>
-
       <TableBody>
-        {products.map((product) => (
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        {products.map((product: any,sr:number) => (
           <TableRow key={product.id}>
-            <TableCell>{product.id}</TableCell>
-            <TableCell>{product.name}</TableCell>
-            <TableCell>{product.image}</TableCell>
+            <TableCell className="items-center justify-center">{(page-1)*10 +sr+1}</TableCell>
+            <TableCell>{product.productName}</TableCell>
+            <TableCell>
+              {product.mainImage?.url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={product.mainImage.url} alt={product.productName} className="w-12 h-12 object-cover rounded" />
+              ) : (
+                "N/A"
+              )}
+            </TableCell>
             <TableCell>{product.category}</TableCell>
-            <TableCell>{product.mrp}</TableCell>
-            <TableCell className="max-w-[200px] truncate">
-              {product.about}
+            <TableCell>₹{product.price}</TableCell>
+            <TableCell className="max-w-50 truncate">
+              {product.about || "N/A"}
             </TableCell>
             <TableCell>{product.stock}</TableCell>
-            <TableCell>{product.addedAt}</TableCell>
-            <TableCell><Switch/>
-
-            
+            <TableCell>{new Date(product.createdAt).toLocaleDateString()}</TableCell>
+            <TableCell>
+              <Switch checked={product.isLive} />
             </TableCell>
             <TableCell>
   <DropdownMenu>
@@ -206,6 +179,32 @@ export default function Product() {
         ))}
       </TableBody>
     </Table>
+    {/* Pagination */}
+    <div className="flex items-center justify-between p-4 bg-background border-t">
+      <div>
+        <p className="text-sm text-gray-600">
+          Page {page} of {totalPages}
+        </p>
+      </div>
+      <div className="flex gap-2">
+        <Button 
+          variant="outline" 
+          onClick={handlePrevPage}
+          disabled={page === 1}
+        >
+          Previous
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={handleNextPage}
+          disabled={page >= totalPages}
+        >
+          Next
+        </Button>
+      </div>
+    </div>
+      </>
+    )}
   </div>
   {isEditOpen && selectedProduct && (
     <EditProduct

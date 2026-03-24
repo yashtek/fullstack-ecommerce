@@ -40,12 +40,12 @@ export const products = pgTable("products", {
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
   about: varchar("about", { length: 255 }).default(""),
   mainImage: json("main_image")
-    .$type<{ url: string; public_id: string }>()
-    .notNull(),
+    .$type<{ url: string; public_id: string }>().default({ url: "", public_id: "" }) 
+    ,
   productImages: json("product_images")
     .$type<{ url: string; public_id: string }[]>()
     .default([])
-    .notNull(),
+  ,
   isLive: boolean("is_live").default(false).notNull(),
   stock: integer("stock").default(0).notNull(),
   category: categoryEnum("category").notNull(),

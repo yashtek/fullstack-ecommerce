@@ -1,5 +1,7 @@
 "use client"
 
+import { error } from "node:console";
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 export const loginApi = async (data: { email: string; password: string }):Promise<any> => {
@@ -8,9 +10,11 @@ export const loginApi = async (data: { email: string; password: string }):Promis
     headers: {
       "Content-Type": "application/json",
     },
+
     body: JSON.stringify(data),
     credentials: "include",
   });
+    
   return res.json()
 }
 
