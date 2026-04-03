@@ -8,8 +8,16 @@ import ProductCard from "@/components/ProductCard";
 import { products, categories } from "@/public/products";
 import heroBanner from "@/public/hero-banner.jpg";
 import promoBanner from "@/public/promo-banner.jpg";
+import { useQuery } from "@tanstack/react-query";
+import { getProducts } from "@/lib/products";
+import { Spinner } from "./ui/spinner";
 
 const Index = () => {
+
+  const {data,isLoading,error} =useQuery({
+    queryKey:["products",{page:1,limit:8}],
+    queryFn:()=>getProducts(1,8),
+  })
   return (
     <div className="min-h-screen">
       {/* Hero */}
@@ -21,9 +29,9 @@ const Index = () => {
           fill
           priority
         />
-        <div className="absolute inset-0 bg-foreground/20" />
+        <div className="absolute inset-0 bg-foreground/20 " />
         <div className="absolute inset-0 flex items-center">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto  p-10">
             <div className="max-w-lg animate-fade-in-up">
               <p className="text-sm uppercase tracking-[0.2em] text-background/80 font-medium mb-3">New Collection</p>
               <h1 className="font-display text-4xl md:text-6xl font-bold text-background leading-tight">
@@ -43,28 +51,29 @@ const Index = () => {
       {/* Featured Products */}
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="flex items-end justify-between mb-10">
-          <div>
+          <div  className="p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">Curated</p>
             <h2 className="font-display text-2xl md:text-3xl font-bold mt-1">Featured Products</h2>
           </div>
-          <Link href="/" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
+          <Link href="/products" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
             View All <ArrowRight size={14} />
           </Link>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {products.slice(0, 8).map((product) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 p-4">
+          {isLoading && <p><Spinner/></p>}
+          {data?.data?.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
       {/* Categories */}
-      <section className="container mx-auto px-4 pb-16 md:pb-24">
+      <section className="container mx-auto px-4 pb-16 md:pb-24 ">
         <div className="text-center mb-10">
           <p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">Browse</p>
           <h2 className="font-display text-2xl md:text-3xl font-bold mt-1">Shop by Category</h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
           {categories.map((cat) => (
             <Link key={cat.name} href="/" className="group relative overflow-hidden rounded-lg aspect-[4/5]">
               <Image
@@ -84,7 +93,7 @@ const Index = () => {
 
       {/* Promo Banner */}
       <section className="container mx-auto px-4 pb-16 md:pb-24">
-        <div className="relative overflow-hidden rounded-xl h-48 md:h-64">
+        <div className="relative overflow-hidden rounded-xl h-48 md:h-64 p-4">
           <Image
             src={promoBanner}
             alt="Seasonal Sale"
@@ -95,7 +104,7 @@ const Index = () => {
             <div className="text-center">
               <h2 className="font-display text-3xl md:text-4xl font-bold text-background">Up to 40% Off</h2>
               <p className="text-background/80 mt-2">Limited time seasonal sale</p>
-              <Button variant="outline" className="mt-4 border-background text-background hover:bg-background hover:text-foreground rounded-full">
+              <Button variant="webs" className="mt-4 border-background text-background hover:bg-background hover:text-foreground rounded-full">
                 Shop Sale
               </Button>
             </div>

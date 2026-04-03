@@ -1,3 +1,4 @@
+"use client"
 import  Link  from "next/link";
 import { Search, ShoppingBag, User, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";

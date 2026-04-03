@@ -1,23 +1,24 @@
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Product } from "@/public/products";
+import { Product } from "@/types/product";
 // import { useCart } from "@/contexts/CartContext";
+
 
 const ProductCard = ({ product }: { product: Product }) => {
 //   const { addToCart } = useCart();
 
   return (
     <div className="group animate-fade-in-up">
-      <Link href={`/product/${product.id}`} className="block">
+     <Link href={`/products/${product.id}`} className="block">
         <div className="relative overflow-hidden rounded-lg bg-secondary aspect-[3/4]">
           <img
-            src={product.image}
-            alt={product.name}
+            src={product.mainImage.url}
+            alt={product.productName}
             loading="lazy"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          {product.originalPrice && (
+          {product.price && (
             <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-semibold px-2.5 py-1 rounded-full">
               Sale
             </span>
@@ -26,17 +27,15 @@ const ProductCard = ({ product }: { product: Product }) => {
       </Link>
       <div className="mt-3 flex items-start justify-between gap-2">
         <div>
-          <Link href={`/product/${product.id}`}>
+          <Link href={`/products/${product.id}`}>
             <h3 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-              {product.name}
+              {product.productName}
             </h3>
           </Link>
           <p className="text-xs text-muted-foreground mt-0.5">{product.category}</p>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-sm font-semibold text-foreground">${product.price}</span>
-            {product.originalPrice && (
-              <span className="text-xs text-muted-foreground line-through">${product.originalPrice}</span>
-            )}
+            <span className="text-sm font-semibold text-foreground">${Number(product.price)}</span>
+          
           </div>
         </div>
         <Button
