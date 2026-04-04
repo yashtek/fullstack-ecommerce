@@ -1,18 +1,20 @@
 import { ProductInput, productSchema } from "../dto/product.dto";
 import { db } from "../db";
-import { products,orders } from "../db/schema";
+import { products, orders } from "../db/schema";
 import { and, desc, eq, ilike, sql } from "drizzle-orm";
 import {
   deleteImage,
   deleteMultipleImages,
   uploadImage,
 } from "../../utils/cloudUpload";
+import { Resend } from "resend";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 const instance = new Razorpay({
-  key_id:process.env.RAZORPAY_Test_API_Key,
-  key_secret:process.env.RAZORPAY_Test_Key_Secret,
+  key_id: process.env.RAZORPAY_Test_API_Key,
+  key_secret: process.env.RAZORPAY_Test_Key_Secret,
 });
+const resend = new Resend(process.env.RESEND_KEY);
 
 export const AddandUpadteProduc = async (
   body: ProductInput,
@@ -260,13 +262,15 @@ export const razorPayOrder = async ({
   amount: number;
 }) => {
   const rpOrder = await instance.orders.create({
-    amount: Math.round(amount * 100), 
+    amount: Math.round(amount * 100),
     currency: "INR",
     receipt: `receipt_${Date.now()}`,
   });
 
-  const [order] = await db.insert(orders).values({
-     productId,
+  const [order] = await db
+    .insert(orders)
+    .values({
+      productId,
       address,
       city,
       pincode,
@@ -275,17 +279,16 @@ export const razorPayOrder = async ({
 
       razorpayOrderId: rpOrder.id,
       status: "pending",
-      expiresAt:new Date(Date.now()+15*60*1000),
-  }).returning();
-  return{
-    orderId:order.id,
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+    })
+    .returning();
+  return {
+    orderId: order.id,
     razorpayOrderId: rpOrder.id,
-    amount:rpOrder.amount,
-    currency:rpOrder.currency,
-  }
-
+    amount: rpOrder.amount,
+    currency: rpOrder.currency,
+  };
 };
-
 
 export const verifyPayment = async ({
   razorpay_order_id,
@@ -307,7 +310,7 @@ export const verifyPayment = async ({
   if (expectedSignature !== razorpay_signature) {
     throw new Error("Invalid payment signature");
   }
-   await db
+  await db
     .update(orders)
     .set({
       status: "paid",
@@ -315,7 +318,43 @@ export const verifyPayment = async ({
     })
     .where(eq(orders.razorpayOrderId, razorpay_order_id));
 
-    return {
-      success:true
+  const order = await db.query.orders.findFirst({
+    where: eq(orders.razorpayOrderId, razorpay_order_id),
+    with: {
+      product: true,
+    },
+  });
+  if (!order) {
+  throw new Error("Order not found");
+}
+
+  const name = order.product.productName;
+  const amount = Number(order.product.price) * order.quantity;
+  const qty = order.quantity;
+  const emailHtml = `
+  <h2>Payment Successful 🎉</h2>
+  <p>Product: ${name}</p>
+  <p>Quantity: ${qty}</p>
+  <p>Total Amount: ₹${amount}</p>
+  <p>Status: Paid</p>
+`;
+
+  (async function () {
+    const { data, error } = await resend.emails.send({
+      from: "Acme <onboarding@resend.dev>",
+      to: ["yashsharma.tech03@gmail.com"],
+      subject: "My first Mail",
+      html: emailHtml,
+    });
+
+    if (error) {
+      return console.error({ error });
     }
+
+    console.log({ data });
+  })();
+
+  return {
+    success: true,
+  };
 };

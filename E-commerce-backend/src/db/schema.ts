@@ -9,6 +9,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 export const roleEnum = pgEnum("user_role", ["admin", "user"]);
 
@@ -90,3 +91,16 @@ export const orders = pgTable("orders", {
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+
+export const ordersRelations = relations(orders, ({ one }) => ({
+  product: one(products, {
+    fields: [orders.productId],
+    references: [products.id],
+  }),
+}));
+
+
+export const productsRelations = relations(products, ({ many }) => ({
+  orders: many(orders),
+}));
