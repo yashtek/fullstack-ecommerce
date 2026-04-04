@@ -1,13 +1,18 @@
 import { ProductInput, productSchema } from "../dto/product.dto";
 import { db } from "../db";
-import { products } from "../db/schema";
+import { products,orders } from "../db/schema";
 import { and, desc, eq, ilike, sql } from "drizzle-orm";
 import {
   deleteImage,
   deleteMultipleImages,
   uploadImage,
 } from "../../utils/cloudUpload";
-
+import Razorpay from "razorpay";
+import crypto from "crypto";
+const instance = new Razorpay({
+  key_id:process.env.RAZORPAY_Test_API_Key,
+  key_secret:process.env.RAZORPAY_Test_Key_Secret,
+});
 
 export const AddandUpadteProduc = async (
   body: ProductInput,
@@ -16,25 +21,26 @@ export const AddandUpadteProduc = async (
 ) => {
   const parsed = productSchema.parse(body);
 
-  const { id, price, productName, stock, category,about } = parsed;
+  const { id, price, productName, stock, category, about } = parsed;
 
   if (stock <= 0) throw new Error("Stock must be greater then 0");
   if (price <= 0) throw new Error("Price must be greate then 0");
-  const cat = ["Electronics",
-  "Clothing",
-  "Toys",
-  "HomeDecor",
-  "Kitchen",
-  "Bathroom",
-  "Stationery",
-  "Food"]
-  if(!cat.includes(category)) throw new Error("Choose valid category");
+  const cat = [
+    "Electronics",
+    "Clothing",
+    "Toys",
+    "HomeDecor",
+    "Kitchen",
+    "Bathroom",
+    "Stationery",
+    "Food",
+  ];
+  if (!cat.includes(category)) throw new Error("Choose valid category");
 
   if (galleryFiles && galleryFiles.length > 5) {
     throw new Error("Maximum 5 Product Image are allowed");
   }
   // update Flow
-  
 
   if (id) {
     const existing = await db.query.products.findFirst({
@@ -44,7 +50,7 @@ export const AddandUpadteProduc = async (
     if (!existing) throw new Error("No Product Found");
 
     let mainImage = existing.mainImage;
-    let productImages  = existing.productImages || [];
+    let productImages = existing.productImages || [];
 
     if (mainFile) {
       const upload = await uploadImage(mainFile, id);
@@ -64,7 +70,7 @@ export const AddandUpadteProduc = async (
         galleryFiles.map((file) => uploadImage(file, id)),
       );
 
-      productImages  = uploadedImage;
+      productImages = uploadedImage;
     }
     console.log(about);
     const [updated] = await db
@@ -79,51 +85,50 @@ export const AddandUpadteProduc = async (
         productImages,
         updatedAt: new Date(),
       })
-      .where(eq(products.id, id)).returning();
+      .where(eq(products.id, id))
+      .returning();
 
     return {
       success: true,
       message: "Product update successfully",
-      data:updated,
+      data: updated,
     };
   }
 
-//   create flow
+  //   create flow
 
-if(!mainFile){
+  if (!mainFile) {
     throw new Error("Main Image is required");
+  }
+  const mainImage = await uploadImage(mainFile);
 
-}
-const mainImage = await uploadImage(mainFile);
+  let productImages: { url: string; public_id: string }[] = [];
 
-    let productImages:{url:string;public_id:string}[]=[];
+  if (galleryFiles && galleryFiles.length > 0) {
+    productImages = await Promise.all(galleryFiles.map((e) => uploadImage(e)));
+  }
 
-    if(galleryFiles && galleryFiles.length >0){
-        productImages = await Promise.all(
-            galleryFiles.map((e)=>uploadImage(e))
-        );
-    }
+  const [created] = await db
+    .insert(products)
+    .values({
+      productName,
+      price: price.toString(),
+      stock,
+      productImages,
+      mainImage,
+      about,
+      category,
+      isLive: false,
+      createdAt: new Date(),
+    })
+    .returning();
 
-    const [created] = await  db.insert(products).values({
-        productName,
-        price:price.toString(),
-        stock,
-        productImages,
-        mainImage,
-        about,
-        category,
-        isLive:false,
-        createdAt:new Date(),
-    }).returning();
-
-    return {
-        success:true,
-        message:"product created Successfully",
-        data:created,
-    };
-
+  return {
+    success: true,
+    message: "product created Successfully",
+    data: created,
+  };
 };
-
 
 export const getALlProductService = async ({
   page = 1,
@@ -140,12 +145,10 @@ export const getALlProductService = async ({
 
   const filters = [];
 
-
   if (search) {
     filters.push(ilike(products.productName, `%${search}%`));
   }
 
-  
   if (category) {
     filters.push(eq(products.category, category));
   }
@@ -164,7 +167,6 @@ export const getALlProductService = async ({
     .where(filters.length ? and(...filters) : undefined);
 
   return {
-  
     data,
     pagination: {
       page,
@@ -175,29 +177,145 @@ export const getALlProductService = async ({
   };
 };
 
+export const getProductById = async ({ id }: { id: string }) => {
+  const data = await db.query.products.findFirst({
+    where: eq(products.id, id),
+  });
+  if (!data) {
+    throw new Error("Product Not found");
+  }
 
+  return {
+    success: true,
+    data,
+  };
+};
 
-export const deleteProductService = async(id:string) => {
-    const existing = await db.query.products.findFirst({
-  where: eq(products.id, id),
-});
-    if(!existing){
-        throw new Error("Product Not found");
-    }
+export const deleteProductService = async (id: string) => {
+  const existing = await db.query.products.findFirst({
+    where: eq(products.id, id),
+  });
+  if (!existing) {
+    throw new Error("Product Not found");
+  }
 
-    if(existing.mainImage?.public_id){
-        await deleteImage(existing.mainImage?.public_id);
-    }
-    if(existing.productImages?.length){
-        await deleteMultipleImages(existing.productImages);
-    }
+  if (existing.mainImage?.public_id) {
+    await deleteImage(existing.mainImage?.public_id);
+  }
+  if (existing.productImages?.length) {
+    await deleteMultipleImages(existing.productImages);
+  }
 
-    await db.delete(products).where(eq(products.id, id));
+  await db.delete(products).where(eq(products.id, id));
 
-    return {
-        message:"Product deleted Successfully"
-    }
+  return {
+    message: "Product deleted Successfully",
+  };
+};
+
+export const ToggleLiveService = async ({
+  id,
+  isLive,
+}: {
+  isLive: boolean;
+  id: string;
+}) => {
+  const existing = await db.query.products.findFirst({
+    where: eq(products.id, id),
+  });
+  if (!existing) {
+    throw new Error("Product Not found");
+  }
+
+  const [updated] = await db
+    .update(products)
+    .set({
+      isLive,
+      updatedAt: new Date(),
+    })
+    .where(eq(products.id, id))
+    .returning();
+
+  if (!updated) throw new Error("Issue while Updating");
+
+  return {
+    success: true,
+    data: updated,
+  };
+};
+
+export const razorPayOrder = async ({
+  productId,
+  address,
+  city,
+  pincode,
+  quantity,
+  amount,
+}: {
+  productId: string;
+  address: string;
+  city: string;
+  pincode: number;
+  quantity: number;
+  amount: number;
+}) => {
+  const rpOrder = await instance.orders.create({
+    amount: Math.round(amount * 100), 
+    currency: "INR",
+    receipt: `receipt_${Date.now()}`,
+  });
+
+  const [order] = await db.insert(orders).values({
+     productId,
+      address,
+      city,
+      pincode,
+      quantity,
+      amount: amount.toString(),
+
+      razorpayOrderId: rpOrder.id,
+      status: "pending",
+      expiresAt:new Date(Date.now()+15*60*1000),
+  }).returning();
+  return{
+    orderId:order.id,
+    razorpayOrderId: rpOrder.id,
+    amount:rpOrder.amount,
+    currency:rpOrder.currency,
+  }
 
 };
 
-export const ToggleLive = () => {};
+
+export const verifyPayment = async ({
+  razorpay_order_id,
+  razorpay_payment_id,
+  razorpay_signature,
+}: {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}) => {
+  const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+  const expectedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_Test_Key_Secret!)
+    .update(body.toString())
+    .digest("hex");
+
+  // 2. Verify
+  if (expectedSignature !== razorpay_signature) {
+    throw new Error("Invalid payment signature");
+  }
+   await db
+    .update(orders)
+    .set({
+      status: "paid",
+      razorpayPaymentId: razorpay_payment_id,
+    })
+    .where(eq(orders.razorpayOrderId, razorpay_order_id));
+
+    return {
+      success:true
+    }
+};

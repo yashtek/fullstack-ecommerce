@@ -22,7 +22,7 @@ export const getProducts = async (
 }
 
 export const getProductbyId = async (id: string) => {
-  const res = await fetch(`${BASE_URL}/product/${id}`)
+  const res = await fetch(`${BASE_URL}/get/${id}`)
   if (!res.ok) throw new Error("Failed to fetch product")
   return res.json()
 }

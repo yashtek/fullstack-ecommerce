@@ -5,10 +5,12 @@ export const productSchema = z.object({
   productName: z.string().min(10).max(255),
   price: z.coerce.number().positive(),
   about: z.string().min(10).max(255).trim().optional(),
-  mainImage: z.object({
-    url: z.string().url(),
-    public_id: z.string(),
-  }).optional(),
+  mainImage: z
+    .object({
+      url: z.string().url(),
+      public_id: z.string(),
+    })
+    .optional(),
   productImages: z
     .array(
       z.object({
@@ -32,3 +34,23 @@ export const productSchema = z.object({
   ]),
 });
 export type ProductInput = z.infer<typeof productSchema>;
+
+export const orderSchema = z.object({
+  productId: z.string().uuid(),
+
+  address: z.string().min(5).max(255),
+  city: z.string().min(2).max(50),
+  pincode: z.number().int().min(100000).max(999999),
+
+  quantity: z.number().int().min(1),
+  amount: z.number().positive(),
+
+  status: z.enum(["pending", "paid", "failed", "cancelled"]).optional(),
+
+  razorpayPaymentId: z.string().max(255).optional(),
+  razorpayOrderId: z.string().max(255).optional(),
+
+  expiresAt: z.coerce.date().optional(),
+});
+
+export type OrderInput = z.infer<typeof orderSchema>
