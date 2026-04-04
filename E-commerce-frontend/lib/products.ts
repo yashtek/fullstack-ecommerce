@@ -26,3 +26,7 @@ export const getProductbyId = async (id: string) => {
   if (!res.ok) throw new Error("Failed to fetch product")
   return res.json()
 }
+
+
+
+

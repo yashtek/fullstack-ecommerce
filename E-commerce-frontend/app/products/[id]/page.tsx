@@ -45,13 +45,15 @@ const ProductDetail = () => {
 
           <p className="text-muted-foreground mt-6 leading-relaxed">{product.about}</p>
 
-          <ul className="mt-6 space-y-2">
-            {product.details.map((d, i) => (
-              <li key={i} className="text-sm text-muted-foreground flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-primary" /> {d}
-              </li>
-            ))}
-          </ul>
+          {product.details && product.details.length > 0 && (
+            <ul className="mt-6 space-y-2">
+              {product.details.map((d, i) => (
+                <li key={i} className="text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="w-1 h-1 rounded-full bg-primary" /> {d}
+                </li>
+              ))}
+            </ul>
+          )}
 
           {/* Quantity */}
           <div className="mt-8">
@@ -75,16 +77,16 @@ const ProductDetail = () => {
 
           {/* Actions */}
           <div className="flex gap-3 mt-8">
-            <Button
+            {/* <Button
               className="flex-1 h-12 rounded-full font-semibold"
               
             >
               <ShoppingBag size={16} className="mr-2" /> Add to Bag
-            </Button>
-            <Link href="/checkout" className="flex-1">
+            </Button> */}
+            <Link href={`/checkout?productId=${id}&qty=${quantity}`} className="flex-1">
               <Button
-                variant="outline"
-                className="w-full h-12 rounded-full font-semibold"
+                
+                className="w-full h-12 rounded-full font-semibold hover:cursor-pointer transition-all duration-200 hover:scale-102 shadow-lg ease-in-out"
               >
                 Buy Now
               </Button>

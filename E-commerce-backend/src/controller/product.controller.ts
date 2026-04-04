@@ -157,8 +157,8 @@ export const updateToggle = async (c: Context) => {
 export const razorpayOrderController = async (c: Context) => {
   try {
     const body = await c.req.json();
-    const { productId, address, city, pincode, quantity, amount } = body;
-    if (!productId || !address || !city || !pincode || !quantity || !amount) {
+    const { productId, address, city, pincode, quantity, amount,phone,name } = body;
+    if (!productId || !address || !city || !pincode || !quantity || !name || !phone) {
       return c.json(
         { success: false, message: "All fields are required" },
         400,

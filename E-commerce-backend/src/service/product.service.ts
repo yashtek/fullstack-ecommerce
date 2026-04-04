@@ -248,21 +248,37 @@ export const ToggleLiveService = async ({
 
 export const razorPayOrder = async ({
   productId,
+  name,
+  phone,
   address,
   city,
   pincode,
   quantity,
-  amount,
 }: {
+  phone: string;
+  name: string;
   productId: string;
   address: string;
   city: string;
   pincode: number;
   quantity: number;
-  amount: number;
 }) => {
+  if (quantity <= 0) {
+    throw new Error("Invalid quantity");
+  }
+
+  const product = await db.query.products.findFirst({
+    where: eq(products.id, productId),
+  });
+
+  if (!product) {
+    throw new Error("Product not found");
+  }
+
+  const amount = Number(product.price) * quantity;
+
   const rpOrder = await instance.orders.create({
-    amount: Math.round(amount * 100),
+    amount: Math.round(amount * 100), // paise
     currency: "INR",
     receipt: `receipt_${Date.now()}`,
   });
@@ -271,6 +287,8 @@ export const razorPayOrder = async ({
     .insert(orders)
     .values({
       productId,
+      phone,
+      name,
       address,
       city,
       pincode,
@@ -282,10 +300,11 @@ export const razorPayOrder = async ({
       expiresAt: new Date(Date.now() + 15 * 60 * 1000),
     })
     .returning();
+
   return {
     orderId: order.id,
     razorpayOrderId: rpOrder.id,
-    amount: rpOrder.amount,
+    amount: rpOrder.amount, 
     currency: rpOrder.currency,
   };
 };
@@ -325,34 +344,40 @@ export const verifyPayment = async ({
     },
   });
   if (!order) {
-  throw new Error("Order not found");
-}
+    throw new Error("Order not found");
+  }
 
-  const name = order.product.productName;
-  const amount = Number(order.product.price) * order.quantity;
-  const qty = order.quantity;
+  const productName = order.product.productName;
+  const totalAmount = Number(order.product.price) * order.quantity;
+  const quantity = order.quantity;
+  const customerName = order.name;
+
   const emailHtml = `
-  <h2>Payment Successful 🎉</h2>
-  <p>Product: ${name}</p>
-  <p>Quantity: ${qty}</p>
-  <p>Total Amount: ₹${amount}</p>
-  <p>Status: Paid</p>
-`;
-
-  (async function () {
+    <h2>Payment Successful 🎉</h2>
+    <p>Hi ${customerName},</p>
+    <p><strong>Product:</strong> ${productName}</p>
+    <p><strong>Quantity:</strong> ${quantity}</p>
+    <p><strong>Total Amount:</strong> ₹${totalAmount}</p>
+    <p><strong>Status:</strong> Paid</p>
+   
+  `;
+  console.log("Reach to email");
+  try {
     const { data, error } = await resend.emails.send({
-      from: "Acme <onboarding@resend.dev>",
-      to: ["yashsharma.tech03@gmail.com"],
-      subject: "My first Mail",
+      from: "Ecommerce <onboarding@resend.dev>",
+      to: ["yashsharma280803@gmail.com"],
+      subject: "Payment Confirmed - Order Receipt",
       html: emailHtml,
     });
 
     if (error) {
-      return console.error({ error });
+      console.error("Email sending error:", error);
+    } else {
+      console.log("Email sent successfully:", data);
     }
-
-    console.log({ data });
-  })();
+  } catch (emailError) {
+    console.error("Failed to send email:", emailError);
+  }
 
   return {
     success: true,

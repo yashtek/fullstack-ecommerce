@@ -71,21 +71,35 @@ export const products = pgTable("products", {
 export const orders = pgTable("orders", {
   id: uuid("id").defaultRandom().primaryKey(),
 
+  name: varchar("fullname", { length: 100 }).notNull(),
+
+  
+  phone: varchar("phone", { length: 20 }).notNull(),
+
   productId: uuid("product_id")
     .notNull()
     .references(() => products.id),
 
   address: varchar("address", { length: 255 }).notNull(),
   city: varchar("city", { length: 50 }).notNull(),
+
+
   pincode: integer("pincode").notNull(),
 
   quantity: integer("qty").notNull(),
+
   amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
 
-  status: varchar("status", { length: 20 }).default("pending").notNull(),
+  status: varchar("status", { length: 20 })
+    .default("pending")
+    .notNull(),
+
 
   razorpayPaymentId: varchar("payment_id", { length: 255 }),
-  razorpayOrderId: varchar("order_id", { length: 255 }),
+
+  
+  razorpayOrderId: varchar("order_id", { length: 255 })
+    .notNull(),
 
   expiresAt: timestamp("expires_at"),
 
